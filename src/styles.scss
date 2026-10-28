@@ -1,0 +1,117 @@
+@use '@infragistics/igniteui-angular/theming' as *;
+
+@include core();
+@include typography($font-family: $material-typeface, $type-scale: $material-type-scale);
+@include theme($default-palette);
+// CSS Reset, comment out if not required or using a different module
+@import 'minireset.css/minireset';
+/* You can add global styles to this file, and also import other style files */
+
+// igx-tree の接続線
+// - igx-tree に class="tree-lines" を付けると有効になります。
+// - 各ノードの縦線は、そのノードの展開アイコンの中心を通ります。
+//   リーフノードでは展開アイコンが非表示になりますが、領域は残るので線は描けます。
+// - テーマの既定では行内のスペーサーでインデントを付けますが、ここでは子グループの
+//   左余白でインデントを付けます。これで線の位置を各要素からの相対位置だけで
+//   決められます。
+.tree-lines {
+  --tree-line: 1px solid var(--ig-gray-500);
+
+  // インデントはスペーサーの代わりに子グループの左余白（展開アイコン 1 個分）で付ける
+  .igx-tree-node__spacer {
+    display: none;
+  }
+
+  .igx-tree-node__wrapper {
+    padding-inline-start: 0;
+  }
+
+  .igx-tree-node__group {
+    position: relative;
+    padding-inline-start: 24px;
+  }
+
+  // 展開アイコンの領域を行の高さいっぱいに広げ、その中に縦線を描く
+  .igx-tree-node__toggle-button {
+    position: relative;
+    align-self: stretch;
+    width: 24px;
+    min-width: 24px;
+    margin-inline-end: 0;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      border-inline-start: var(--tree-line);
+      // 非表示の展開アイコン（リーフノード）でも線は表示する
+      visibility: visible;
+      pointer-events: none;
+    }
+
+    // 縦線の上半分（行の上端から中央まで）
+    &::before {
+      top: 0;
+      bottom: 50%;
+    }
+
+    // 縦線の下半分（行の中央から下端まで。次の兄弟へ続く）
+    &::after {
+      top: 50%;
+      bottom: 0;
+    }
+  }
+
+  // 展開アイコンが表示されているノード: アイコンと重ならないよう中央で線を切る
+  .igx-tree-node__toggle-button:not(.igx-tree-node__toggle-button--hidden) {
+    &::before {
+      bottom: calc(50% + 12px);
+    }
+
+    &::after {
+      top: calc(50% + 12px);
+    }
+  }
+
+  // リーフノード: 上半分の線に下辺を付けて、テキストへ向かう横線にする
+  .igx-tree-node__toggle-button--hidden::before {
+    width: 50%;
+    border-bottom: var(--tree-line);
+  }
+
+  // 最後の兄弟: 縦線の下半分を消し、行の中央で止めて L 字（└）にする
+  igx-tree-node:last-of-type > .igx-tree-node__wrapper > .igx-tree-node__toggle-button::after {
+    content: none;
+  }
+
+  // 最初のルートノード: 上に兄弟がないため、縦線の上半分を消して中央から始める（┌）
+  .igx-tree__root > igx-tree-node:first-of-type > .igx-tree-node__wrapper > .igx-tree-node__toggle-button::before {
+    border-inline-start: none;
+  }
+
+  // 展開中の親ノード: 展開アイコンの下から行の下端まで縦線を引き、子ノードへつなぐ
+  // （子の展開アイコン中心 = 親の展開アイコン中心 12px + インデント 24px）
+  // 行の ::after はテーマがホバー表示に使っているため ::before を使う
+  igx-tree-node:has(> .igx-tree-node__group > igx-tree-node) > .igx-tree-node__wrapper::before {
+    content: '';
+    position: absolute;
+    top: calc(50% + 12px);
+    bottom: 0;
+    left: 36px;
+    border-inline-start: var(--tree-line);
+    pointer-events: none;
+  }
+
+  // 次の兄弟があるノードを展開しているとき: 子ノードの横を通る縦線を子グループに描き、
+  // 次の兄弟までつなげる（子の行の背景に隠れないよう z-index で手前に出す）
+  igx-tree-node:not(:last-of-type) > .igx-tree-node__group::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    left: 12px;
+    border-inline-start: var(--tree-line);
+    z-index: 1;
+    pointer-events: none;
+  }
+}

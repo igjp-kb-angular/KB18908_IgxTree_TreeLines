@@ -1,0 +1,17 @@
+<main class="tree-page">
+  <!-- tree-lines クラスで接続線を表示（スタイルは styles.scss で定義） -->
+  <igx-tree class="tree-lines" aria-label="Files">
+    @for (folder of treeData; track folder.id) {
+      <igx-tree-node [data]="folder" [expanded]="$first">
+        {{ folder.label }}
+        @for (file of folder.children; track file.id) {
+          <igx-tree-node [data]="file">
+            {{ file.label }}
+          </igx-tree-node>
+        }
+      </igx-tree-node>
+    }
+  </igx-tree>
+</main>
+
+<router-outlet />
